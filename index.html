@@ -1,2 +1,451 @@
-<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>الماس فری فایر</title><style>body{margin:0;background:#07111f;color:#fff;font-family:Arial}main{max-width:520px;margin:auto;padding:18px}.card{background:#0d2035;border:1px solid #24577e;border-radius:18px;padding:16px;margin:12px 0}button,input,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border-radius:10px}button{border:0;background:#159ff0;color:#fff;font-weight:bold}input,select{background:#071827;color:#fff;border:1px solid #315b78}.price{font-weight:bold;color:#7ed7ff}.small{color:#9eb4c7;font-size:13px}.order{border-top:1px solid #23445d;padding:12px 0}</style><main><h1>💎 الماس فری فایر</h1><div class="card"><h2>خرید جم</h2><select id="pack"><option value="100">100 جم</option><option value="310">310 جم</option><option value="520">520 جم</option><option value="1060">1060 جم</option></select><p>قیمت: <b id="price">قیمت تنظیم نشده</b></p><input id="pid" placeholder="Player ID"><button onclick="buy()">ثبت سفارش</button></div><div class="card"><h2>📋 خریدهای من</h2><div id="orders"></div></div><div class="card"><h2>🛠️ مدیریت قیمت</h2><input id="p100" placeholder="قیمت 100 جم"><input id="p310" placeholder="قیمت 310 جم"><input id="p520" placeholder="قیمت 520 جم"><input id="p1060" placeholder="قیمت 1060 جم"><button onclick="savePrices()">ذخیره قیمت‌ها</button></div><div class="card"><h2>💳 پرداخت آزمایشی</h2><p class="small">این بخش فقط برای تست است و هیچ پول واقعی دریافت نمی‌کند.</p><div id="paybox"></div></div></main><script>const packs=[100,310,520,1060],pack=document.getElementById('pack');const defaultPrices={100:'60 هزار تومان',310:'150 هزار تومان',520:'250 هزار تومان',1060:'400 هزار تومان'};function price(n){return localStorage.getItem('p'+n)||defaultPrices[n]||''}function refresh(){let v=price(pack.value);document.getElementById('price').textContent=v||'قیمت تنظیم نشده'}pack.onchange=refresh;packs.forEach(n=>{let v=price(n);if(v)document.getElementById('p'+n).value=v});refresh();function savePrices(){packs.forEach(n=>localStorage.setItem('p'+n,document.getElementById('p'+n).value.trim()));refresh();alert('قیمت‌ها ذخیره شد ✅')}function buy(){let pid=document.getElementById('pid').value.trim(),n=pack.value,pr=price(n),msg=document.getElementById('paybox');if(!pid){msg.innerHTML='<p class=small>⚠️ لطفاً Player ID را وارد کن.</p>';return}if(!pr){msg.innerHTML='<p class=small>⚠️ اول قیمت این بسته را تنظیم کن.</p>';return}let a=JSON.parse(localStorage.getItem('orders')||'[]');let order={number:'FF'+Date.now(),pack:n+' جم',playerId:pid,price:pr,status:'در انتظار پرداخت'};a.unshift(order);localStorage.setItem('orders',JSON.stringify(a));document.getElementById('pid').value='';render();msg.innerHTML='<p>✅ سفارش با موفقیت ثبت شد.</p><p class=small>شماره سفارش: '+order.number+'<br>مبلغ: '+order.price+'</p>';window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});} 
-function render(){let a=JSON.parse(localStorage.getItem('orders')||'[]'),b=document.getElementById('orders');b.innerHTML=a.length?a.map((o,i)=>`<div class="order"><b>💎 ${o.pack}</b><p>Player ID: ${o.playerId}</p><p>مبلغ: ${o.price}</p><p>وضعیت: ${o.status}</p><button onclick="testPay(${i})">${o.status==='پرداخت‌شده'?'پرداخت‌شده':'💳 پرداخت آزمایشی'}</button></div>`).join(''):'<p class="small">هنوز سفارشی ثبت نشده است.</p>'}function testPay(i){let a=JSON.parse(localStorage.getItem('orders')||'[]');if(a[i].status==='پرداخت‌شده')return; if(!confirm('پرداخت آزمایشی این سفارش با مبلغ '+a[i].price+' انجام شود؟'))return; a[i].status='پرداخت‌شده';localStorage.setItem('orders',JSON.stringify(a));render();alert('پرداخت آزمایشی موفق بود ✅')} render();</script>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>الماس فری فایر | خرید الماس</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    body {
+      background: #080b16;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #11162a;
+      padding: 18px 15px;
+      text-align: center;
+      border-bottom: 1px solid #242b47;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      color: #ffd43b;
+      font-size: 24px;
+    }
+
+    header p {
+      color: #aeb6d0;
+      margin-top: 7px;
+      font-size: 13px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 35px 15px 25px;
+    }
+
+    .hero h2 {
+      font-size: 28px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .hero h2 span {
+      color: #ffd43b;
+    }
+
+    .hero p {
+      color: #aeb6d0;
+      font-size: 14px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    .box {
+      background: #11162a;
+      border: 1px solid #242b47;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .box-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #ffd43b;
+    }
+
+    .packages {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .package {
+      background: #171d34;
+      border: 2px solid transparent;
+      border-radius: 15px;
+      padding: 18px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .package:hover {
+      border-color: #ffd43b;
+      transform: translateY(-2px);
+    }
+
+    .package.selected {
+      border-color: #ffd43b;
+      background: #202743;
+    }
+
+    .diamond {
+      font-size: 20px;
+      color: #4dc8ff;
+      font-weight: bold;
+    }
+
+    .price {
+      margin-top: 10px;
+      color: #ffd43b;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      border: 1px solid #303957;
+      border-radius: 12px;
+      background: #080b16;
+      color: white;
+      outline: none;
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .input:focus {
+      border-color: #ffd43b;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 13px;
+      padding: 15px;
+      margin-top: 15px;
+      background: #ffd43b;
+      color: #111;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #ffdf63;
+    }
+
+    .result {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #18243a;
+      border: 1px solid #304568;
+      line-height: 2;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .feature {
+      background: #11162a;
+      border: 1px solid #242b47;
+      border-radius: 14px;
+      padding: 15px 8px;
+      text-align: center;
+      font-size: 12px;
+      color: #c5cbe0;
+    }
+
+    .feature strong {
+      display: block;
+      color: #ffd43b;
+      font-size: 18px;
+      margin-bottom: 7px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #777f99;
+      font-size: 12px;
+    }
+
+    @media (max-width: 450px) {
+      .packages {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h2 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>💎 الماس فری فایر</h1>
+  <p>فروش الماس فری فایر</p>
+</header>
+
+<section class="hero">
+  <h2>خرید <span>الماس فری فایر</span></h2>
+  <p>بسته موردنظر خود را انتخاب کنید</p>
+</section>
+
+<div class="container">
+
+  <div class="box">
+    <div class="box-title">💎 انتخاب بسته</div>
+
+    <div class="packages" id="packages"></div>
+  </div>
+
+  <div class="box">
+    <div class="box-title">🎮 اطلاعات بازیکن</div>
+
+    <label>Player ID</label>
+    <input
+      id="playerId"
+      class="input"
+      type="text"
+      placeholder="آیدی فری فایر خود را وارد کنید"
+    >
+
+    <button class="btn" onclick="createOrder()">
+      ادامه و ثبت سفارش
+    </button>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <strong>💎</strong>
+      بسته‌های مختلف
+    </div>
+
+    <div class="feature">
+      <strong>⚡</strong>
+      ثبت سفارش سریع
+    </div>
+
+    <div class="feature">
+      <strong>🔒</strong>
+      ثبت اطلاعات سفارش
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 الماس فری فایر
+</footer>
+
+
+<script>
+
+/*
+====================================
+       💰 قیمت‌های سایت
+====================================
+
+اگر بعداً خواستی قیمت‌ها را تغییر بدهی،
+فقط عدد price را تغییر بده.
+
+مثلاً:
+price: 90000
+
+یعنی ۹۰ هزار تومان
+*/
+
+const packages = [
+  {
+    diamonds: 100,
+    price: 80000
+  },
+  {
+    diamonds: 310,
+    price: 120000
+  },
+  {
+    diamonds: 520,
+    price: 250000
+  },
+  {
+    diamonds: 1060,
+    price: 400000
+  },
+  {
+    diamonds: 2180,
+    price: 600000
+  },
+  {
+    diamonds: 5600,
+    price: 950000
+  }
+];
+
+let selectedPackage = null;
+
+
+/*
+====================================
+       نمایش بسته‌ها
+====================================
+*/
+
+const packagesBox = document.getElementById("packages");
+
+packages.forEach((item, index) => {
+
+  const div = document.createElement("div");
+
+  div.className = "package";
+
+  div.innerHTML = `
+    <div class="diamond">
+      💎 ${item.diamonds.toLocaleString("fa-IR")} الماس
+    </div>
+
+    <div class="price">
+      ${item.price.toLocaleString("fa-IR")} تومان
+    </div>
+  `;
+
+  div.onclick = function () {
+
+    document.querySelectorAll(".package")
+      .forEach(x => x.classList.remove("selected"));
+
+    div.classList.add("selected");
+
+    selectedPackage = item;
+  };
+
+  packagesBox.appendChild(div);
+});
+
+
+/*
+====================================
+       ثبت سفارش
+====================================
+*/
+
+function createOrder() {
+
+  const playerId =
+    document.getElementById("playerId").value.trim();
+
+  const result =
+    document.getElementById("result");
+
+
+  if (!selectedPackage) {
+
+    result.style.display = "block";
+
+    result.innerHTML =
+      "⚠️ لطفاً ابتدا یک بسته الماس انتخاب کنید.";
+
+    return;
+  }
+
+
+  if (!playerId) {
+
+    result.style.display = "block";
+
+    result.innerHTML =
+      "⚠️ لطفاً Player ID خود را وارد کنید.";
+
+    return;
+  }
+
+
+  const orderId =
+    "FF" +
+    Date.now().toString().slice(-8);
+
+
+  const order = {
+
+    orderId: orderId,
+
+    playerId: playerId,
+
+    diamonds: selectedPackage.diamonds,
+
+    price: selectedPackage.price,
+
+    date: new Date().toLocaleString("fa-IR")
+
+  };
+
+
+  localStorage.setItem(
+    "ff_order_" + orderId,
+    JSON.stringify(order)
+  );
+
+
+  result.style.display = "block";
+
+  result.innerHTML = `
+    <b>✅ سفارش با موفقیت ثبت شد</b>
+    <br>
+    شماره سفارش:
+    <b>${orderId}</b>
+    <br>
+    الماس:
+    ${selectedPackage.diamonds.toLocaleString("fa-IR")}
+    <br>
+    مبلغ:
+    ${selectedPackage.price.toLocaleString("fa-IR")} تومان
+    <br><br>
+
+    <small>
+    این نسخه فعلاً ثبت سفارش را انجام می‌دهد.
+    در مرحله بعد می‌توانیم پرداخت آنلاین را به آن وصل کنیم.
+    </small>
+  `;
+
+}
+
+</script>
+
+</body>
+  </html>
+  
